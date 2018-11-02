@@ -18,7 +18,7 @@ Usage
 To run, provide a line separated list of users ("user=password") in the property file defined by the `USERS_PROPERTIES_FILE` environment variable and execute:
 
 ```shell
-go run loginusers_oauth2.go
+go run main.go
 ```
 
 Configuration via environment variables:
@@ -33,5 +33,5 @@ Configuration via environment variables:
 Example:
 
 ```shell
-AUTH_SERVER_ADDRESS=https://auth.prod-preview.openshift.io -Duser.tokens.file=osioperftest.tokens go run loginusers_oauth2.go
+AUTH_SERVER_ADDRESS=https://auth.prod-preview.openshift.io -Duser.tokens.file=osioperftest.tokens go run main.go
 ```
