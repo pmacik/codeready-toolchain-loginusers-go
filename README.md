@@ -38,7 +38,7 @@ import (
     "log"
 
     "github.com/pmacik/loginusers-go/config"
-    "github.com/pmacik/loginusers-go/loginuser"
+    "github.com/pmacik/loginusers-go/loginusers"
 )
 
 func main(){

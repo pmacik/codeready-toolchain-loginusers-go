@@ -1,23 +1,23 @@
 package main
 
 import (
-    "log"
+	"log"
 
-    "github.com/pmacik/loginusers-go/config"
-    "github.com/pmacik/loginusers-go/loginuser"
+	"github.com/pmacik/loginusers-go/config"
+	"github.com/pmacik/loginusers-go/loginusers"
 )
 
-func main(){
-    cfg := config.DefaultConfig()
-    cfg.Auth.ServerAddress = "http://localhost:8089"
+func main() {
+	cfg := config.DefaultConfig()
+	cfg.Auth.ServerAddress = "http://localhost:8089"
 
-    userTokens, err := loginusers.OAuth2("username", "password", cfg)
+	userTokens, err := loginusers.OAuth2("username", "password", cfg)
 
-    if err != nil {
-        log.Fatalf("Unable to login user: %s", err)
-        return
-    }
+	if err != nil {
+		log.Fatalf("Unable to login user: %s", err)
+		return
+	}
 
-    log.Printf("Auth: %s", userTokens.AccessToken)
-    log.Printf("Refresh: %s", userTokens.RefreshToken)
+	log.Printf("Auth: %s", userTokens.AccessToken)
+	log.Printf("Refresh: %s", userTokens.RefreshToken)
 }
