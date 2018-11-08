@@ -43,7 +43,7 @@ import (
 
 func main(){
     cfg := config.DefaultConfig()
-    cfg..Auth.ServerAddress = "http://localhost:8089"
+    cfg.Auth.ServerAddress = "http://localhost:8089"
 
     userTokens, err := loginusers.OAuth2("username", "password", cfg)
 
