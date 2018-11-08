@@ -7,25 +7,27 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
-	common "github.com/pmacik/loginusers-go/common"
+	"github.com/pmacik/loginusers-go/common"
+	"github.com/pmacik/loginusers-go/config"
 
 	"github.com/google/uuid"
 	"github.com/tebeka/selenium"
 )
 
-// LoginUsersOAuth2 attempts to login into CodeReady Toolchain (former Openshift.io)
-func LoginUsersOAuth2(authServerAddress string, userName string, userPassword string) (*Tokens, error) {
-	wd, service := initSelenium()
+// OAuth2 attempts to login into CodeReady Toolchain (former Openshift.io)
+func OAuth2(userName string, userPassword string, configuration config.Configuration) (*Tokens, error) {
+	wd, service := initSelenium(configuration)
 
 	defer service.Stop()
 	defer wd.Quit()
 
-	clientID := common.Getenv("AUTH_CLIENT_ID", "740650a2-9c44-4db5-b067-a3d1b2cd2d01")
+	authServerAddress := configuration.Auth.ServerAddress
+
 	redirectURL := fmt.Sprintf("%s/api/status", authServerAddress)
 	state, _ := uuid.NewUUID()
+	clientID := configuration.Auth.OAuth2.ClientID
 
 	startURL := fmt.Sprintf("%s/api/authorize?response_type=code&client_id=%s&redirect_uri=%s&state=%s", authServerAddress, clientID, redirectURL, state.String())
 
@@ -80,6 +82,7 @@ func LoginUsersOAuth2(authServerAddress string, userName string, userPassword st
 	return &tokens, nil
 }
 
+// Tokens represents JSON message containing auth tokens returned by successful login.
 type Tokens struct {
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    string `json:"expires_in"`
@@ -108,14 +111,11 @@ func submitElement(element selenium.WebElement) {
 	common.CheckErr(err)
 }
 
-func initSelenium() (selenium.WebDriver, *selenium.Service) {
-	chromeDriverPath := common.Getenv("CHROMEDRIVER_BINARY", "chromedriver")
-	chromeDriverPort := common.Getenv("CHROMEDRIVER_PORT", "9515")
+func initSelenium(configuration config.Configuration) (selenium.WebDriver, *selenium.Service) {
+	chromedriverPath := configuration.Chromedriver.Binary
+	chromedriverPort := configuration.Chromedriver.Port
 
-	port, err := strconv.Atoi(chromeDriverPort)
-	common.CheckErr(err)
-
-	service, err := selenium.NewChromeDriverService(chromeDriverPath, port)
+	service, err := selenium.NewChromeDriverService(chromedriverPath, chromedriverPort)
 	common.CheckErr(err)
 
 	chromeOptions := map[string]interface{}{
@@ -131,7 +131,7 @@ func initSelenium() (selenium.WebDriver, *selenium.Service) {
 		"chromeOptions": chromeOptions,
 	}
 
-	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
+	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", chromedriverPort))
 	common.CheckErr(err)
 	return wd, service
 }

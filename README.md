@@ -1,10 +1,8 @@
-Login Openshift.io users
-========================
+# Login Openshift.io users
 
 An utility to login Openshift.io users and get auth and refresh tokens.
 
-Prerequisities
---------------
+## Prerequisities
 
 Chrome or [Chromium browser](https://www.chromium.org/Home) with headless feature and [Chromedriver](https://sites.google.com/a/chromium.org/chromedriver/) needs to be installed where it is run (for Fedora/RHEL/CentOS):
 
@@ -12,26 +10,49 @@ Chrome or [Chromium browser](https://www.chromium.org/Home) with headless featur
 sudo yum install chromium chromium-headless chromedriver
 ```
 
-Usage
------
+## Usage
 
-To run, provide a line separated list of users ("user=password") in the property file defined by the `USERS_PROPERTIES_FILE` environment variable and execute:
+To run, provide a line separated list of users ("user=password") in the property file defined by the `users.credentialsFile` variable in the `config.yml` (default file is `users.properties`)
+
+### Configuration via `config.xml`
+
+* `auth.serverAddress` = server of Auth Services (default `https://localhost:8089`).
+* `auth.oauth2.clientID` = OAuth2 protocol client id (default `740650a2-9c44-4db5-b067-a3d1b2cd2d01`).
+* `users.credentialsFile` = a file containing a line separated list of users in a form of `user=password` (default `users.properties`).
+* `users.tokens.file` = an output file where the generated auth and refresh tokens were written after succesfull login of each user (default `users.tokens`).
+* `users.tokens.includeUsername` = "`true` if username is to be included in the output (default `talse`).
+* `users.maxUsers` = A maximal number of users taken from the `users.credentialsFile` (default `-1` means unlimited).
+
+### Run standalone
 
 ```shell
 go run main.go
 ```
 
-Configuration via environment variables:
+### Use as Go library
 
-* `AUTH_SERVER_ADDRESS` = server of Auth Services (default `https://auth.openshift.io`).
-* `AUTH_CLIENT_ID` = client id (default `740650a2-9c44-4db5-b067-a3d1b2cd2d01`).
-* `USERS_PROPERTIES_FILE` = a file containing a line separated list of users in a form of `user=password` (default `users.properties`).
-* `USER_TOKENS_FILE` = an output file where the generated auth and refresh tokens were written after succesfull login of each user (default `user.tokens`).
-* `USER_TOKENS_INCLUDE_USERNAME` = "`true` if username is to be included in the output (default `talse`).
-* `MAX_USERS` = A maximal number of users taken from the `USERS_PROPERTIES_FILE` (default `-1` means unlimited).
+```go
+package main
 
-Example:
+import (
+    "log"
 
-```shell
-AUTH_SERVER_ADDRESS=https://auth.prod-preview.openshift.io -Duser.tokens.file=osioperftest.tokens go run main.go
+    "github.com/pmacik/loginusers-go/config"
+    "github.com/pmacik/loginusers-go/loginuser"
+)
+
+func main(){
+    cfg := config.DefaultConfig()
+    cfg..Auth.ServerAddress = "http://localhost:8089"
+
+    userTokens, err := loginusers.OAuth2("username", "password", cfg)
+
+    if err != nil {
+        log.Fatalf("Unable to login user: %s", err)
+        return
+    }
+
+    log.Printf("Auth: %s", userTokens.AccessToken)
+    log.Printf("Refresh: %s", userTokens.RefreshToken)
+}
 ```
