@@ -5,26 +5,26 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/pmacik/loginusers-go/common"
+	"github.com/pmacik/loginusers-go/config"
 	"github.com/pmacik/loginusers-go/loginusers"
 )
 
 func main() {
-	authServerAddress := common.Getenv("AUTH_SERVER_ADDRESS", "http://localhost:8089")
+	configuration := config.Config()
 
-	usersPropertiesFile := common.Getenv("USERS_PROPERTIES_FILE", "users.properties")
+	authServerAddress := configuration.Auth.ServerAddress
+	usersCredentialsFile := configuration.Users.CredentialsFile
+	userTokensFile := configuration.Users.Tokens.File
+	userTokensIncludeUsername := configuration.Users.Tokens.IncludeUsername
 
-	userTokensFile := common.Getenv("USER_TOKENS_FILE", "user.tokens")
-	userTokensIncludeUsername := strings.ToLower(common.Getenv("USER_TOKENS_INCLUDE_USERNAME", "false")) == "true"
-
-	maxUsers := common.Getenv("MAX_USERS", "-1")
+	maxUsers := configuration.Users.MaxUsers
 
 	log.SetOutput(os.Stdout)
 
-	ufile, err := os.Open(usersPropertiesFile)
+	ufile, err := os.Open(usersCredentialsFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,22 +56,18 @@ func main() {
 	w := bufio.NewWriter(tfile)
 	defer w.Flush()
 	for index, userName := range userNames {
-		maxUsersCount, err := strconv.Atoi(maxUsers)
-		common.CheckErr(err)
-		if maxUsersCount > 0 && index >= maxUsersCount {
+		if maxUsers > 0 && index >= maxUsers {
 			break
 		}
-		log.Printf("Loggin user %s in", userName)
-		tokens, err := loginusers.LoginUsersOAuth2(authServerAddress, userName, userPasswords[index])
+		log.Printf("Loggin user %s via %s", userName, authServerAddress)
+		tokens, err := loginusers.OAuth2(authServerAddress, userName, userPasswords[index], configuration)
 		common.CheckErr(err)
 		tokenLine := fmt.Sprintf("%s;%s", tokens.AccessToken, tokens.RefreshToken)
 		if userTokensIncludeUsername {
 			tokenLine = fmt.Sprintf("%s;%s", tokenLine, userName)
 		}
-
+		//write tokens to user.tokens file
 		_, err = w.WriteString(fmt.Sprintf("%s\n", tokenLine))
 		common.CheckErr(err)
 	}
-	//write tokens to user.tokens file
-
 }

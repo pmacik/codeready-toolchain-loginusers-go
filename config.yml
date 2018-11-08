@@ -1,0 +1,15 @@
+auth:
+  serverAddress: "https://localhost:8089"
+  oauth2:
+    clientID: "740650a2-9c44-4db5-b067-a3d1b2cd2d01"
+
+chromedriver:
+  binary: "chromedriver"
+  port: "9515"
+
+users:
+  credentialsFile: "users.properties"
+  tokens:
+    file: "users.tokens"
+    includeUsername: false
+  maxUsers: -1
