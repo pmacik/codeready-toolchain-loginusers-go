@@ -60,7 +60,7 @@ func main() {
 			break
 		}
 		log.Printf("Loggin user %s via %s", userName, authServerAddress)
-		tokens, err := loginusers.OAuth2(authServerAddress, userName, userPasswords[index], configuration)
+		tokens, err := loginusers.OAuth2(userName, userPasswords[index], configuration)
 		common.CheckErr(err)
 		tokenLine := fmt.Sprintf("%s;%s", tokens.AccessToken, tokens.RefreshToken)
 		if userTokensIncludeUsername {
