@@ -22,6 +22,8 @@ func main() {
 
 	maxUsers := cfg.Users.MaxUsers
 
+	i=5
+
 	log.SetOutput(os.Stdout)
 
 	ufile, err := os.Open(usersCredentialsFile)
