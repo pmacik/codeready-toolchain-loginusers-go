@@ -22,7 +22,7 @@ To run, provide a line separated list of users ("user=password") in the property
 * `auth.oauth2.clientID` = OAuth2 protocol client id (default `740650a2-9c44-4db5-b067-a3d1b2cd2d01`).
 * `users.credentialsFile` = a file containing a line separated list of users in a form of `user=password` (default `users.properties`).
 * `users.tokens.file` = an output file where the generated auth and refresh tokens were written after succesfull login of each user (default `users.tokens`).
-* `users.tokens.includeUsername` = "`true` if username is to be included in the output (default `talse`).
+* `users.tokens.includeUsername` = `true` if username is to be included in the output (default `false`).
 * `users.maxUsers` = A maximal number of users taken from the `users.credentialsFile` (default `-1` means unlimited).
 
 ```shell
