@@ -13,14 +13,14 @@ import (
 )
 
 func main() {
-	configuration := config.Config()
+	cfg := config.Config()
 
-	authServerAddress := configuration.Auth.ServerAddress
-	usersCredentialsFile := configuration.Users.CredentialsFile
-	userTokensFile := configuration.Users.Tokens.File
-	userTokensIncludeUsername := configuration.Users.Tokens.IncludeUsername
+	authServerAddress := cfg.Auth.ServerAddress
+	usersCredentialsFile := cfg.Users.CredentialsFile
+	userTokensFile := cfg.Users.Tokens.File
+	userTokensIncludeUsername := cfg.Users.Tokens.IncludeUsername
 
-	maxUsers := configuration.Users.MaxUsers
+	maxUsers := cfg.Users.MaxUsers
 
 	log.SetOutput(os.Stdout)
 
@@ -60,7 +60,7 @@ func main() {
 			break
 		}
 		log.Printf("Loggin user %s via %s", userName, authServerAddress)
-		tokens, err := loginusers.OAuth2(userName, userPasswords[index], configuration)
+		tokens, err := loginusers.OAuth2(userName, userPasswords[index], cfg)
 		common.CheckErr(err)
 		tokenLine := fmt.Sprintf("%s;%s", tokens.AccessToken, tokens.RefreshToken)
 		if userTokensIncludeUsername {
