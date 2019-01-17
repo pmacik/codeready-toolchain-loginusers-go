@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/pmacik/loginusers-go/common"
 	"github.com/pmacik/loginusers-go/config"
@@ -40,14 +41,21 @@ func OAuth2(userName string, userPassword string, configuration config.Configura
 
 	log.Printf("get-code...")
 	sendKeysToElementBy(wd, selenium.ByID, "username", userName)
+
+	findElementBy(wd, selenium.ByID, "login-show-step2").Click()
+
 	elem := findElementBy(wd, selenium.ByID, "password")
+	wd.WaitWithTimeout(func(wd selenium.WebDriver) (bool, error) {
+		return elem.IsDisplayed()
+	}, 10*time.Second)
+
 	sendKeysToElement(elem, userPassword)
 	submitElement(elem)
 
 	wd.WaitWithTimeout(func(wd selenium.WebDriver) (bool, error) {
 		currentURL, _ := wd.CurrentURL()
 		return strings.Contains(currentURL, state.String()), nil
-	}, 10000)
+	}, 10*time.Second)
 
 	currentURL, _ := wd.CurrentURL()
 	u, err := url.Parse(currentURL)
