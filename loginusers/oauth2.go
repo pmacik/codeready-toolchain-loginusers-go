@@ -129,6 +129,7 @@ func initSelenium(configuration config.Configuration) (selenium.WebDriver, *sele
 	chromeOptions := map[string]interface{}{
 		"args": []string{
 			"--no-cache",
+			"--no-sandbox",
 			"--headless",
 			"--window-size=1920,1080",
 			"--window-position=0,0",
