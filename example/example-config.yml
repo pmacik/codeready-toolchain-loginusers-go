@@ -1,0 +1,17 @@
+auth:
+  serverAddress: "https://sso.redhat.com"
+  path: "/auth/realms/redhat-external/protocol/openid-connect"
+  redirectURI: "https://console.redhat.com/beta/hac/stonesoup"
+  oauth2:
+    clientID: "cloud-services"
+
+chromedriver:
+  binary: "chromedriver"
+  port: "9515"
+
+users:
+  credentialsFile: "example/users.properties"
+  tokens:
+    file: "example/users.tokens"
+    includeUsername: false
+  maxUsers: -1

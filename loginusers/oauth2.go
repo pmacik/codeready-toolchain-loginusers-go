@@ -25,22 +25,22 @@ func OAuth2(userName string, userPassword string, configuration config.Configura
 	defer wd.Quit()
 
 	authServerAddress := configuration.Auth.ServerAddress
+	authServerPath := configuration.Auth.Path
 
-	redirectURL := fmt.Sprintf("%s/api/status", authServerAddress)
+	redirectURL := configuration.Auth.RedirectURI
 	state, _ := uuid.NewUUID()
 	clientID := configuration.Auth.OAuth2.ClientID
 
-	startURL := fmt.Sprintf("%s/api/authorize?response_type=code&client_id=%s&redirect_uri=%s&state=%s", authServerAddress, clientID, redirectURL, state.String())
-
+	startURL := fmt.Sprintf("%s%s/auth?response_mode=fragment&response_type=code&scope=openid nameandterms&client_id=%s&redirect_uri=%s&state=%s", authServerAddress, authServerPath, clientID, redirectURL, state.String())
 	log.Printf("open-login-page...")
 	if err := wd.Get(startURL); err != nil {
 		return nil, fmt.Errorf("failed to open URL: '%s'", startURL)
 	}
 
-	findElementBy(wd, selenium.ByID, "kc-login")
+	findElementBy(wd, selenium.ByID, "rh-username-verification-form")
 
-	log.Printf("get-code...")
-	sendKeysToElementBy(wd, selenium.ByID, "username", userName)
+	log.Printf("login...")
+	sendKeysToElementBy(wd, selenium.ByID, "username-verification", userName)
 
 	findElementBy(wd, selenium.ByID, "login-show-step2").Click()
 
@@ -50,22 +50,34 @@ func OAuth2(userName string, userPassword string, configuration config.Configura
 	}, 10*time.Second)
 
 	sendKeysToElement(elem, userPassword)
+	log.Printf("get-code...")
 	submitElement(elem)
 
+	var currentURL string
 	wd.WaitWithTimeout(func(wd selenium.WebDriver) (bool, error) {
-		currentURL, _ := wd.CurrentURL()
-		return strings.Contains(currentURL, state.String()), nil
-	}, 10*time.Second)
+		currentURL, _ = wd.CurrentURL()
+		return strings.Contains(currentURL, redirectURL), nil
+	}, 5*time.Second)
 
-	currentURL, _ := wd.CurrentURL()
+	retVal, err := wd.ExecuteScript(`var entries = performance.getEntries();
+	for (var i = 0; i < entries.length; i++) {
+		if (entries[i].name.indexOf('code')!==-1){
+			return entries[i].name;
+		}
+	}`, nil)
+
+	if err != nil {
+		log.Printf("Error calling script: %v", err)
+	}
+	currentURL = retVal.(string)
+	currentURL = strings.ReplaceAll(currentURL, "#", "?")
 	u, err := url.Parse(currentURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse URL: '%s'", currentURL)
 	}
 	code := u.Query()["code"]
-	log.Printf("get-token...")
 	resp, err := http.PostForm(
-		fmt.Sprintf("%s/api/token", authServerAddress),
+		fmt.Sprintf("%s%s/token", authServerAddress, authServerPath),
 		url.Values{
 			"grant_type":   {"authorization_code"},
 			"client_id":    {clientID},
@@ -134,6 +146,7 @@ func initSelenium(configuration config.Configuration) (selenium.WebDriver, *sele
 			"--window-size=1920,1080",
 			"--window-position=0,0",
 		},
+		"w3c": false,
 	}
 
 	caps := selenium.Capabilities{

@@ -5,4 +5,6 @@ type AuthConfiguration struct {
 	OAuth2        OAuth2Configuration
 	Tokens        TokensConfiguration
 	ServerAddress string
+	RedirectURI   string
+	Path          string
 }
